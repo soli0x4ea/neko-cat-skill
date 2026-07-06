@@ -131,7 +131,7 @@ def main():
 
     # ── 记忆管道命令 ──────────────────────────────────
 
-    elif cmd == "cat-food":
+    elif cmd == "save-cat-food":
         # 放猫粮：LLM 统计对话条数 → 存猫粮
         n = int(sys.argv[2]) if len(sys.argv) > 2 else 0
         n_treats, total, output = feed_cat_food(n)

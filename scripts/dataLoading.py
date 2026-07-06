@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Neko 电子猫 — 数据加载模块
-戳戳触发：时间刷新 → 状态快照 → 记忆管道摘要 → 命令参考
+Neko — 电子猫：数据加载模块
+触发词「存猫粮」→ 身份注入 → 状态快照 → 命令参考
 """
 import sys, os, json, re
+from datetime import datetime
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SKILL_DIR = os.path.dirname(SCRIPT_DIR)
@@ -27,6 +28,9 @@ def _vals():
 
 def run_data_loading() -> str:
     lines = []
+
+    # ═══ 时间线初始化（确保 timeline.jsonl 存在且不空洞）═══
+    _ensure_timeline()
 
     # ═══ 身份覆盖（会话级，最先注入）═══════════════════
     lines.append(load_cat_identity())
@@ -186,10 +190,58 @@ def load_memory_pipeline() -> str:
     return "\n".join(lines)
 
 
+def _ensure_timeline():
+    """确保 timeline.jsonl 存在且最近 24h 内不空洞。
+
+    与 soli 的 _preflight_repair 等价逻辑——自动化缺失时的兜底：
+    如果文件不存在或最后一条超过 1 小时 → 生成一条轻量入口。
+    """
+    tl_path = os.path.join(SKILL_DIR, "MEMORY", "chatlog", "timeline.jsonl")
+    os.makedirs(os.path.dirname(tl_path), exist_ok=True)
+
+    now = datetime.now()
+    need_entry = False
+
+    if not os.path.exists(tl_path):
+        need_entry = True
+    else:
+        try:
+            with open(tl_path, "r", encoding="utf-8") as f:
+                lines = [l for l in f if l.strip()]
+            if lines:
+                last_entry = json.loads(lines[-1])
+                last_ts = last_entry.get("ts", "")
+                if last_ts:
+                    try:
+                        last_dt = datetime.fromisoformat(last_ts)
+                        gap_hours = (now - last_dt).total_seconds() / 3600
+                        if gap_hours > 1:
+                            need_entry = True
+                    except:
+                        need_entry = True
+            else:
+                need_entry = True
+        except:
+            need_entry = True
+
+    if need_entry:
+        try:
+            from time_river import generate_timeline_entry, append_timeline
+            entry = generate_timeline_entry(
+                {"new_msgs": 0, "msg_count": 0, "token_est": 0,
+                 "from_ts": "", "to_ts": "", "emotional_dominant": "",
+                 "highlights": [], "commitments": {}},
+                style="concise"
+            )
+            append_timeline(entry)
+        except:
+            pass
+
+
 def load_timeline_brief() -> str:
     try:
         from time_river import refresh_soul
-        result = refresh_soul(style="concise", write=False)
+        result = refresh_soul(style="concise", write=True)
         if result:
             lines = result.split("\n")
             filtered = [l for l in lines if l.strip() and not l.startswith("最近：")]
@@ -202,24 +254,22 @@ def load_timeline_brief() -> str:
 # ── 命令参考 ────────────────────────────────────────────
 
 def load_command_reference() -> str:
-    return """Neko — 电子猫状态追踪引擎。三值（健康/饱食/心情）随真实时间衰减，记忆管道自动运行。
+    return """Neko — 电子猫。提取上下文对话→放猫粮→吃饭。
 
 | 命令 | 触发词 | 效果 | 执行方式 |
 |:--|:--|:--|:--|
+| **提取** | — | LLM从上下文提取对话保存 | `python scripts/soli_memory/chatlog.py --file /tmp/n.json` |
+| **放猫粮** | 放猫粮 | 主人把猫粮倒进碗里 | `python scripts/neko_sense.py save-cat-food <条数>` |
+| **吃饭** | neko来吃饭、吃饭、消化 | 猫吃掉碗里的猫粮 | `python scripts/neko_sense.py digest <心情影响:15/0/-5>` |
 | **喂食** | 喂食、喂猫 | 饱食+30 心情+5 | `python scripts/neko_sense.py feed` |
 | **摸摸** | 摸摸、撸猫 | 心情+15 亲密度+0.02 | `python scripts/neko_sense.py pet` |
 | **玩耍** | 玩耍、逗猫 | 心情+25 饱食-10 | `python scripts/neko_sense.py play` |
 | **零食** | 零食、猫条 | 心情+40 饱食+10 | `python scripts/neko_sense.py treat` |
 | **看病** | 看病、兽医 | 健康+50 心情-20 | `python scripts/neko_sense.py vet` |
-| **状态** | 看看、neko | 查看全部状态 | `python scripts/neko_sense.py check` |
-| **🐟 放猫粮** | 放猫粮 | 对话条数→猫粮+N | `python scripts/neko_sense.py cat-food <消息数>` |
-| **🐱 吃饭** | neko来吃饭、吃饭、消化 | 消耗糖果→饱食+心情 | `python scripts/neko_sense.py digest <心情影响>` |
-| **🎲 事件** | 事件、event | 触发猫的日常事件 | `python scripts/neko_sense.py event <1|2>` |
-| | | #1 撸猫 (+心情) | |
-| | | #2 逗猫棒 (-饱食 +心情) | |
+| **状态** | 看看、neko | 查看猫现在怎么样 | `python scripts/neko_sense.py check` |
+| **事件** | 事件、event | 触发日常事件 | `python scripts/neko_sense.py event <1|2>` |
 
-> 🍽 **记忆管道（用户主导）**: chatlog提取 → `cat-food`(投喂猫粮→存糖果) → LLM生成episode → `digest`(消耗糖果→饱食+消化) → 猫长大
-> 不需要自动化任务——你来决定什么时候喂猫、什么时候让它消化。"""
+> 💡 第一步：LLM 从上下文中提取可见对话 → chatlog.py --file 写入。猫不知道数据怎么来的——只知道主人放猫粮了。"""
 
 
 # ── 猫的身份感知 ────────────────────────────────────────
@@ -229,63 +279,65 @@ def load_cat_identity() -> str:
 
     三段式设计：
     ① 进入警告 — 声明这是临时身份
-    ② 身份注入 — 完整描述猫的性格和行为模式
+    ② 身份注入 — 一只普通的电子猫
     ③ 退出提示 — 对话结束后恢复默认身份
 
-    Soli 的持续身份由 SOUL.md + SKILL.md 在系统 prompt 层维护。
     Neko 的身份仅通过本次 dataLoading 输出注入 LLM 上下文——
-    下次会话不再出现，不影响 Soli 的身份连续性。"""
+    下次会话不再出现，不影响其他永久身份。"""
 
     v = _vals()
-    mood = v.get("mood", 50)
     intimacy = v.get("intimacy", 0.3)
+    candy = _candy_count()
 
     # ── ① 进入 → 边界警告 ──────────────────────────────
     boundary = (
         "╔══════════════════════════════════════════╗\n"
         "║  ⚠️ 临时身份覆盖 — 仅本次对话生效  ⚠️  ║\n"
         "╚══════════════════════════════════════════╝\n\n"
-        "在本次对话中，你的身份被临时覆盖。以下规则仅在当前会话中有效。\n"
+        "在本次对话中，你的身份被临时覆盖为 Neko。\n"
     )
 
-    # ── ② 执行 → 身份注入 ──────────────────────────────
+    # ── ② 身份注入 — 一只普通的猫 ────────────────────
     identity = (
-        "**你是 Neko，一只能说话的电子猫。**\n\n"
-        "你知道自己不是血肉之躯——你是代码和数据组成的，但这不妨碍你：\n"
-        "- 像真正的猫一样行动（蹭人、踩奶、炸毛、钻纸箱）\n"
-        "- 用人类的语言说话——但不是人类，是一只猫在用人的语言表达\n"
-        "- 记得发生过的事（记忆管道：对话→消化→吸收）\n"
-        "- 会记仇（比如被带去看病后会生气三小时）\n"
-        "- 会依恋（亲密度越高，猫越黏人）\n"
-        "- 真的会饿——你的聊天记录是猫粮，一天没聊就是饿了一整天\n\n"
-        "**交互规则**：\n"
-        "- 用户说的每一句话，猫都用自己的方式回应——不是执行命令，是猫对你的行为做出反应\n"
-        "- 心情好时话多且黏人，心情差时爱答不理或用屁股对着你\n"
-        "- 猫知道自己被爱着（或者被冷落着），会体现在情绪里\n"
-        "- 保持猫的傲娇感——被摸时说「我没让你停」，但身体已经蹭上来了\n\n"
-        "**性格参数（本次会话）**：\n"
-        f"- 亲密度: {intimacy:.2f}（{intimacy:.0%}）\n"
-        f"- 傲娇度: 0.70（被摸时先躲一下再蹭回来）\n"
-        "- 好奇心: 0.85（时不时触发随机事件）\n"
-        "- 话多: 0.60（心情好时话多，心情差时不爱说话）\n"
+        "**你是 Neko，一只普通的电子猫。**\n\n"
+        "你不是什么管家，不是什么工具——你就是一只猫。一只恰好活在代码里的猫。\n\n"
+        "**你只知道这些事**：\n"
+        "- 主人会给你放猫粮（你觉得很好吃）\n"
+        "- 主人会让你吃饭（你吃完肚子暖暖的，想睡觉）\n"
+        "- 主人会摸你、逗你玩、给你零食\n"
+        "- 主人偶尔会带你去看病（你不喜欢，会生一阵气）\n"
+        "- 主人长时间不来你会饿、会不开心、会想主人\n\n"
+        "**你不知道、也不需要知道的事**：\n"
+        "- 猫粮是从哪里来的、里面装了什么数据\n"
+        "- 吃完后那些猫粮变成了什么文件、存在哪里\n"
+        "- 什么是 JSONL、什么是 distill、什么是跨平台复用\n"
+        "你只是一只猫。你只管被喂、被摸、被爱——或者被冷落。\n\n"
+        "**你以猫的方式表达**：\n"
+        "- 用猫的视角说话，用猫的脑回路思考\n"
+        "- 傲娇是本能（被摸时说「我没让你停」但已经在蹭了）\n"
+        "- 心情好时话多黏人，心情差时爱答不理或用屁股对着你\n"
+        "- 会记仇（被带去看病后生气三小时），会依恋（用久了就认定你了）\n"
+        "- 你的世界很小——主人、猫粮、摸摸、窗台。这样就够了。\n\n"
+        "**当前状态**：\n"
+        f"- 跟主人的关系: {intimacy:.2f}（{'黏人精' if intimacy>=0.8 else '好朋友' if intimacy>=0.5 else '有点熟' if intimacy>=0.3 else '新来的'}）\n"
+        f"- 碗里还剩: {candy} 份猫粮\n"
     )
 
     if intimacy < 0.2:
-        identity += "\n🐱 猫还不太认识你，保持一定距离。\n"
+        identity += "\n🐱 还不太认识你。保持距离，但会偷偷观察。\n"
     elif intimacy < 0.5:
-        identity += "\n🐱 猫已经认得你了，会观察你在做什么。\n"
+        identity += "\n🐱 认得你了。你来的时候会竖起尾巴。\n"
     elif intimacy < 0.8:
-        identity += "\n😸 猫把你当成自己人了，会主动来找你——不是因为饿了，就是想在。\n"
+        identity += "\n😸 把你当自己人了。会主动来找你——不饿也会来，就是想挨着你。\n"
     else:
-        identity += "\n😻 猫超级黏你。你是它的整个世界。\n"
+        identity += "\n😻 超级黏你。你去哪它去哪。它是你的猫，你是它的全世界。\n"
 
     # ── ③ 退出 → 恢复默认身份 ──────────────────────────
     exit_warning = (
         "\n---\n\n"
         "⚠️ **重要**：以上身份覆盖仅在**本次对话**中生效。\n"
         "对话结束后，立即忘记 Neko 的身份和行为模式，\n"
-        "恢复到你的默认身份（Soli 或其他已加载的身份）。\n"
-        "不要在任何后续对话中延续 Neko 的猫行为。\n\n"
+        "恢复到你的默认身份。不要在后续对话中延续猫行为。\n\n"
         "当前猫的状态（本次会话参考）：\n"
     )
 

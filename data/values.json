@@ -1,10 +1,10 @@
 {
   "hp": 71,
-  "hunger": 85,
+  "hunger": 100,
   "mood": 100,
   "pleasure_locked": false,
   "bound": false,
   "area_profile": "v",
-  "intimacy": 0.43000000000000005,
+  "intimacy": 0.4600000000000001,
   "last_check": "2026-07-06T11:07:55.830835"
 }

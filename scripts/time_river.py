@@ -328,7 +328,7 @@ def refresh_soul(style: str = None, write: bool = True):
     """读 timeline.jsonl → 生成时间感知数据 → 写入 time.json
     
     style: None=自动从 state 读取 | "poetic" | "concise"
-    write: True=写入 time.json | False=只读不写（戳戳用）
+    write: True=写入 time.json | False=只读不写
     """
     if style is None:
         state = _read_state()

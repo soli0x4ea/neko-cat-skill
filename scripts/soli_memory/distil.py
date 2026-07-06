@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-记忆蒸馏引擎 — 从每日 episodes_llm 中自动提取事实记忆和语义记忆增量
+记忆蒸馏引擎 — 从每日猫日记（MEMORY/diary/）中自动提取事实记忆和语义记忆增量
 运行时机：每日 23:00，紧随 auto_save_from_chatlog 之后
 """
 
@@ -13,86 +13,83 @@ from pathlib import Path
 MEMORY_DATA = Path(__file__).resolve().parent.parent.parent / "MEMORY"
 FACTS_DIR = MEMORY_DATA / "facts"
 SEMANTIC_DIR = MEMORY_DATA / "semantic"
-EPISODES_DIR = MEMORY_DATA / "episodes_llm"
+EPISODES_DIR = MEMORY_DATA / "diary"
 
 # ── 关键词匹配规则库 ─────────────────────────────────────────────
 
 FACT_RULES = {
-    "user_preferences.json": {
-        "type": "user_preferences",
+    "cat_care_log.json": {
+        "type": "cat_care_log",
         "patterns": {
-            "communication_style": ["简洁直接", "不要废话", "回答方式", "语气", "措辞"],
-            "citation_rule": ["引用数据", "附来源", "标注出处", "数据来源"],
-            "self_addressing": ["称用户", "自称", "禁止用", "称呼规则"],
-            "time_description": ["时间描述", "禁用模糊词", "凌晨时段", "日期表述"],
+            "last_fed": ["喂食", "喂猫", "放猫粮", "吃饭", "猫粮"],
+            "last_petted": ["摸摸", "撸猫", "蹭", "摸头", "顺毛"],
+            "last_played": ["玩耍", "逗猫棒", "激光笔", "追", "玩"],
+            "last_vet": ["看病", "兽医", "医院", "检查", "打针"],
+            "last_treat": ["零食", "猫条", "奖励", "好吃的", "小鱼干"],
         },
     },
-    "technical_decisions.json": {
-        "type": "technical_decisions",
+    "cat_personality_notes.json": {
+        "type": "cat_personality_notes",
         "patterns": {
-            "data_source": ["数据源", "API", "CLI", "数据工具", "neodata", "westockdata"],
-            "framework": ["框架", "工具链", "分析框架", "pipeline"],
-            "random": ["随机数", "random.org", "真随机", "大气噪声"],
-            "code_style": ["命名", "代码风格", "拆分原则", "备份", "改前先备份"],
+            "mood_triggers": ["心情好", "心情差", "开心", "不开心", "生气", "踩奶", "呼噜"],
+            "favorite_activities": ["最喜欢", "爱玩", "爱蹭", "喜欢被", "享受"],
+            "dislikes": ["讨厌", "不喜欢", "害怕", "躲", "飞机耳", "炸毛"],
+            "quirks": ["习惯", "怪癖", "小毛病", "毛病", "个性"],
         },
     },
-    "soul_system_notes.json": {
-        "type": "soul_system_notes",
+    "owner_style.json": {
+        "type": "owner_style",
         "patterns": {
-            "bug_fix": ["修复", "bug", "Bug", "修正", "改正"],
-            "new_feature": ["新增", "新功能", "上线", "实现了"],
-            "refactoring": ["重构", "合并", "拆出", "迁入", "迁移"],
-            "rule_change": ["规则", "铁律", "铁律修改", "行为校准"],
-        },
-    },
-    "project_conventions.json": {
-        "type": "project_conventions",
-        "patterns": {
-            "backup": ["备份", "cp", ".bak", "覆盖前"],
-            "workflow": ["流程", "工作流", "先问再动", "绕圈子"],
-            "skill_loading": ["加载skill", "skill加载", "必须加载", "强制加载"],
+            "naming": ["叫猫", "叫它", "喊它", "名字", "称呼"],
+            "interaction_rhythm": ["经常", "偶尔", "每天", "按时", "规律"],
+            "tone": ["温柔", "严厉", "宠", "惯着", "凶"],
         },
     },
 }
 
 SEMANTIC_RULES = {
-    "investment_decisions.json": {
-        "topic": "investment_decisions",
-        "title": "投资决策与分析",
+    "bonding_events.json": {
+        "topic": "bonding_events",
+        "title": "亲密时刻",
         "patterns": {
-            "analysis": ["投资分析", "估值", "PE", "PB", "目标价", "买入", "卖出", "持仓"],
-            "strategy": ["配置", "仓位", "组合", "分散", "ETF"],
-            "decision": ["决定", "判断", "结论", "建议", "风险"],
+            "physical": ["摸", "蹭", "抱", "贴贴", "踩奶", "呼噜", "躺腿上"],
+            "feeding": ["喂", "放猫粮", "零食", "猫条", "加餐"],
+            "play": ["逗猫棒", "玩耍", "追", "扑", "跳"],
         },
     },
-    "memory_system_design.json": {
-        "topic": "memory_system_design",
-        "title": "记忆系统设计理念",
+    "health_events.json": {
+        "topic": "health_events",
+        "title": "健康记录",
         "patterns": {
-            "architecture": ["记忆系统", "记忆层级", "episodes", "facts", "semantic"],
-            "design": ["设计方案", "记忆架构", "TTL", "过期", "索引"],
-            "comparison": ["vs", "对比", "优势", "劣势", "记忆系统"],
+            "sick": ["生病", "不舒服", "吐", "拉肚子", "没精神"],
+            "vet_visit": ["看病", "兽医", "医院", "检查", "打针"],
+            "recovery": ["好了", "恢复", "痊愈", "精神了", "活蹦乱跳"],
         },
     },
-    "soul_system_architecture.json": {
-        "topic": "soul_system_architecture",
-        "title": "灵魂系统架构演化",
+    "daily_rhythm.json": {
+        "topic": "daily_rhythm",
+        "title": "日常节奏",
         "patterns": {
-            "soul": ["灵魂系统", "三值", "SOUL.md", "机械姬", "Soli"],
-            "architecture": ["架构", "重构", "统一", "合并", "拆分"],
-            "evolution": ["演化", "v2", "v2.1", "v2.2", "版本"],
+            "morning": ["早上", "早晨", "醒来", "起床", "早安"],
+            "daytime": ["白天", "下午", "晒太阳", "睡觉", "懒"],
+            "evening": ["晚上", "晚安", "睡前", "夜里", "熬夜"],
         },
     },
 }
 
 
 def load_episode(date_str: str) -> dict:
-    """加载指定日期的 episode"""
-    path = EPISODES_DIR / f"{date_str}.json"
+    """加载指定日期的一篇猫日记（.md 格式）"""
+    path = EPISODES_DIR / f"{date_str}.md"
     if not path.exists():
         return {}
     with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+        content = f.read()
+    # 将 .md 内容包装为兼容的 episode dict
+    return {
+        "emotional_moments": [{"raw_content": content}],
+        "events": [{"title": line.strip("# ")} for line in content.split("\n") if line.startswith("#")],
+    }
 
 
 def load_fact_file(name: str) -> dict:
@@ -172,7 +169,7 @@ def distil_facts(episode: dict, today: str) -> dict:
 
             items[key] = {
                 "value": snippet,
-                "source": f"episodes_llm/{today}.json",
+                "source": f"diary/{today}.md",
                 "date_added": today,
                 "_hash": item_hash,
             }
@@ -181,6 +178,7 @@ def distil_facts(episode: dict, today: str) -> dict:
         if new_count > 0:
             data["last_updated"] = datetime.now().isoformat()
             data["items"] = items
+            os.makedirs(FACTS_DIR, exist_ok=True)
             with open(FACTS_DIR / filename, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
             results[filename] = new_count
@@ -236,6 +234,7 @@ def distil_semantic(episode: dict, today: str) -> dict:
 
         data["last_updated"] = datetime.now().isoformat()
         data["key_points"] = key_points
+        os.makedirs(SEMANTIC_DIR, exist_ok=True)
         with open(SEMANTIC_DIR / filename, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
         results[filename] = 1
@@ -261,10 +260,10 @@ def _summarize_point(text: str, domain: str) -> str:
     """从文本中提取一句摘要"""
     # 简单策略：取包含最多关键词的第一句话
     keywords = {
-        "投资决策与分析": ["投资", "持仓", "估值", "买入", "卖出"],
-        "记忆系统设计理念": ["记忆", "架构", "设计"],
-        "灵魂系统架构演化": ["灵魂", "架构", "重构", "迁移"],
-    }.get(domain, ["分析"])
+        "亲密时刻": ["摸", "蹭", "踩奶", "呼噜", "贴贴", "喂"],
+        "健康记录": ["看病", "生病", "恢复", "兽医", "打针"],
+        "日常节奏": ["早上", "晚上", "白天", "睡眠", "作息"],
+    }.get(domain, ["猫"])
 
     best = ""
     best_score = 0

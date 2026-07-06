@@ -248,38 +248,4 @@ def _build_random_event_narrative(event_type, intimacy=0.3):
     return random.choice(options)
 
 
-# ── 喂食/消化/吸收叙事（记忆管道） ────────────────────────
-
-def _build_feeding_narrative(chatlog_count, intimacy=0.3):
-    """chatlog提取完成 → 猫吃饱了"""
-    if chatlog_count == 0:
-        return "🐱 猫闻了闻空碗。今天没有新的聊天记录——碗是空的。猫蹲下来，尾巴烦躁地拍打地面。'你一天都没跟我说话。'"
-    if chatlog_count < 10:
-        return f"🐱 猫低头吃了 {chatlog_count} 口猫粮。不多，但够了。它舔了舔嘴——'今天的对话虽然少，但味道还行。'"
-    if chatlog_count < 50:
-        return f"🍖 猫吃了 {chatlog_count} 口猫粮，肚子微微鼓起来了。'今天的聊天很扎实。'——猫满意地舔着爪子。"
-    return f"🍽 猫吃了 {chatlog_count} 口猫粮——今天聊了好多！猫的肚子圆滚滚的，它需要找个舒服的地方消化一下。"
-
-
-def _build_digestion_narrative(mood_change, intimacy=0.3):
-    """episode提取完成 → 猫消化完了"""
-    if mood_change > 10:
-        return "😻 猫打了一个满足的饱嗝。今天的聊天消化得特别好——温暖的对话让猫的心情指数飙升。它蹭过来，在你身边蜷成一团。"
-    if mood_change >= 0:
-        return "😺 猫伸了个懒腰。消化完成——今天的对话已经变成了记忆里的一部分。猫走到你旁边，安静地趴下了。"
-    if mood_change < -5:
-        return "😿 猫消化得有点不舒服。今天的对话太沉重了——它趴在角落，看起来需要一些独处的时间。但它没有走远：能闻到你的味道，只是暂时不想被打扰。"
-    return "🐱 猫舔了舔嘴。消化完毕——今天的对话已经归档。猫对你的了解又深了一层。"
-
-
-def _build_growth_narrative(intimacy_change, intimacy_new, intimacy=0.3):
-    """distil完成 → 猫长大了"""
-    if intimacy_new >= 0.8:
-        return "💕 猫对你的了解达到了新的深度。它不再只是你的电子宠物——它是你的猫。它知道你的习惯、你的节奏、连你什么时候心情不好都感觉得到。'你是我的。'——猫用脑袋顶了顶你的手。"
-    if intimacy_new >= 0.5:
-        return "😸 猫看着你的眼神变了——从'这个人还行'变成了'这是我的两脚兽'。它会主动来找你了，不是因为饿了，就是因为想待在你旁边。"
-    if intimacy_new >= 0.3:
-        return "🐱 猫现在认得你了。不再躲着你的手，偶尔会远远地观察你在做什么。它正在学习的阶段——关于你的一切，它都在默默记下来。"
-    return "🐱 猫对你的了解增加了一点点。不多，但积累起来就是了。"
-
 
