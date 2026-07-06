@@ -164,23 +164,22 @@ def load_memory_pipeline() -> str:
     except:
         lines.append("📥 猫粮: 读取失败")
 
-    # episode 状态
-    ep_dir = os.path.join(SKILL_DIR, "MEMORY", "episodes_llm")
+    # 日记状态
+    diary_dir = os.path.join(SKILL_DIR, "MEMORY", "diary")
     try:
-        ep_files = [f for f in os.listdir(ep_dir) if f.endswith(".md")]
-        if ep_files:
-            lines.append(f"📖 消化记录: {len(ep_files)} 天（最近: {max(ep_files)}）")
+        d_files = [f for f in os.listdir(diary_dir) if f.endswith(".md")]
+        if d_files:
+            lines.append(f"📖 猫日记: {len(d_files)} 篇（最近: {max(d_files)}）")
         else:
-            lines.append("📖 消化记录: 空的（还没消化过）")
+            lines.append("📖 猫日记: 空的（还没写过）")
     except:
-        lines.append("📖 消化记录: 读取失败")
+        lines.append("📖 猫日记: 读取失败")
 
-    # 关系记忆
-    rel_dir = os.path.join(SKILL_DIR, "MEMORY", "relationships")
+    # 猫粮库存
     try:
-        rel_files = [f for f in os.listdir(rel_dir) if f.endswith(".json")]
-        if rel_files:
-            lines.append(f"🤝 关系图谱: {len(rel_files)} 条记录")
+        with open(os.path.join(DATA_DIR, "candy.json"), "r", encoding="utf-8") as f:
+            c = json.load(f)
+        lines.append(f"🍬 猫粮库存: {c.get('count', 0)} 颗")
     except:
         pass
 
@@ -213,7 +212,7 @@ def load_command_reference() -> str:
 | **零食** | 零食、猫条 | 心情+40 饱食+10 | `python scripts/neko_sense.py treat` |
 | **看病** | 看病、兽医 | 健康+50 心情-20 | `python scripts/neko_sense.py vet` |
 | **状态** | 看看、neko | 查看全部状态 | `python scripts/neko_sense.py check` |
-| **🐟 放猫粮** | 放猫粮 | 自动提取对话→糖果+N | `python scripts/neko_sense.py cat-food` |
+| **🐟 放猫粮** | 放猫粮 | 对话条数→猫粮+N | `python scripts/neko_sense.py cat-food <消息数>` |
 | **🐱 吃饭** | neko来吃饭、吃饭、消化 | 消耗糖果→饱食+心情 | `python scripts/neko_sense.py digest <心情影响>` |
 | **🎲 事件** | 事件、event | 触发猫的日常事件 | `python scripts/neko_sense.py event <1|2>` |
 | | | #1 撸猫 (+心情) | |

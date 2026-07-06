@@ -146,7 +146,7 @@ def feed(vals=None):
         "hunger_after": vals["hunger"],
         "mood_after": vals["mood"],
     }
-    track_change("feed", {"hunger": f"{old_hunger}→{vals['hunger']}", "mood": f"+5→{vals['mood']}"})
+    # track_change("feed", {"hunger": f"{old_hunger}→{vals['hunger']}", "mood": f"+5→{vals['mood']}"})
     return result
 
 
@@ -166,7 +166,7 @@ def pet(vals=None):
         "mood_after": vals["mood"],
         "intimacy": vals["intimacy"],
     }
-    track_change("pet", {"mood": f"{old_mood}→{vals['mood']}", "intimacy": f"+0.02→{vals['intimacy']:.2f}"})
+    # track_change("pet", {"mood": f"{old_mood}→{vals['mood']}", "intimacy": f"+0.02→{vals['intimacy']:.2f}"})
     return result
 
 
@@ -189,7 +189,7 @@ def play(vals=None):
         "hunger_before": old_hunger,
         "hunger_after": vals["hunger"],
     }
-    track_change("play", {"mood": f"{old_mood}→{vals['mood']}", "hunger": f"{old_hunger}→{vals['hunger']}"})
+    # track_change("play", {"mood": f"{old_mood}→{vals['mood']}", "hunger": f"{old_hunger}→{vals['hunger']}"})
     return result
 
 
@@ -222,7 +222,7 @@ def treat(vals=None):
         "hp_after": vals["hp"],
         "candy_left": c["count"],
     }
-    track_change("treat", {"mood": f"{old_mood}→{vals['mood']}", "hunger": f"{old_hunger}→{vals['hunger']}", "hp": f"+5→{vals['hp']}", "candy": c["count"]})
+    # track_change("treat", {"mood": f"{old_mood}→{vals['mood']}", "hunger": f"{old_hunger}→{vals['hunger']}", "hp": f"+5→{vals['hp']}", "candy": c["count"]})
     return result
 
 
@@ -248,7 +248,7 @@ def vet(vals=None):
             "mood_after": vals["mood"],
             "intimacy": vals["intimacy"],
         }
-        track_change("vet(revive)", {"hp": f"{old_hp}→50", "mood": f"→{vals['mood']}", "intimacy": f"-0.1→{vals['intimacy']:.2f}"})
+        # track_change("vet(revive)", {"hp": f"{old_hp}→50", "mood": f"→{vals['mood']}", "intimacy": f"-0.1→{vals['intimacy']:.2f}"})
         return result
 
     vals["hp"] = min(100, old_hp + 50)
@@ -355,23 +355,18 @@ def load_today_stdout():
 
 # ── 猫粮喂养管道（记忆→灵魂桥接）─────────────────────
 
-EPISODE_DIR = os.path.join(SKILL_DIR, "MEMORY", "episodes_llm")
+DIARY_DIR = os.path.join(SKILL_DIR, "MEMORY", "diary")
 
 
-def feed_cat_food(n_messages=None):
+def feed_cat_food(n_messages):
     """
-    投喂猫粮：先自动运行 chatlog 提取对话，再按消息数存糖果。
-    如果 n_messages 未提供，自动从 chatlog 提取结果中获取数量。
-    n_messages = 提取到的对话条数。
-    每 10 条对话 = 1 颗猫粮（糖果），存入糖果罐。
+    放猫粮：将 LLM 统计好的对话条数转换为猫粮，存入猫粮罐。
+    n_messages = 对话条数（LLM 提前统计好传入）。
+    每 10 条对话 = 1 颗猫粮。
     返回 (n_treats_added, total_treats, narrative)
     """
-    if n_messages is None:
-        # 自动运行 chatlog 提取
-        n_messages = _run_chatlog_extract()
-
     if n_messages <= 0:
-        return (0, candy_read()["count"], "碗是空的——今天没有新的对话。猫蹲在空碗旁边看着你。")
+        return (0, candy_read()["count"], "碗是空的——没有新的对话可以喂。猫蹲在空碗旁边看着你。")
 
     n_treats = max(1, n_messages // 10)
     c = candy_read()
@@ -382,49 +377,25 @@ def feed_cat_food(n_messages=None):
     track_change("feed_cat_food", {"treats": f"+{n_treats}→{total}", "messages": n_messages})
 
     if n_messages < 20:
-        narrative = f"🐱 chatlog 提取了 {n_messages} 条对话，猫低头吃了 {n_messages} 口猫粮。不多，但新鲜。糖果罐 +{n_treats}（现有 {total} 颗）。"
+        narrative = f"🐱 {n_messages} 条对话变成了 {n_treats} 颗猫粮。不多，但新鲜。猫低头吃了起来。猫粮罐现有 {total} 颗。"
     elif n_messages < 80:
-        narrative = f"🍖 chatlog 提取了 {n_messages} 条对话，猫的肚子微微鼓起来。糖果罐 +{n_treats}（现有 {total} 颗）。今天的对话很扎实。"
+        narrative = f"🍖 {n_messages} 条对话变成了 {n_treats} 颗猫粮。猫的肚子微微鼓起来。猫粮罐现有 {total} 颗。今天的聊天很扎实。"
     else:
-        narrative = f"🍽 chatlog 提取了 {n_messages} 条对话——今天聊了好多！猫的肚子圆滚滚的。糖果罐 +{n_treats}（现有 {total} 颗）。"
+        narrative = f"🍽 {n_messages} 条对话——今天聊了好多！变成了 {n_treats} 颗猫粮。猫的肚子圆滚滚的。猫粮罐现有 {total} 颗。"
 
     return (n_treats, total, narrative)
-
-
-def _run_chatlog_extract():
-    """运行 chatlog 提取，返回新增的消息条数"""
-    import subprocess
-    try:
-        chatlog_script = os.path.join(SKILL_DIR, "scripts", "soli_memory", "chatlog.py")
-        result = subprocess.run(
-            [sys.executable, chatlog_script],
-            capture_output=True, text=True, timeout=30,
-            cwd=SKILL_DIR
-        )
-        output = result.stdout + result.stderr
-        # 解析 "提取完成：新增 N 条记录。"
-        import re
-        m = re.search(r"新增\s*(\d+)\s*条记录", output)
-        if m:
-            return int(m.group(1))
-        # 无新记录
-        if "无新记录" in output:
-            return 0
-        return 0
-    except Exception:
-        return 0
 
 
 def eat_and_digest(mood_impact=0):
     """
     吃猫粮 + 消化：LLM 生成情景记忆后调用。
-    消耗糖果罐中的 1 颗猫粮 → 饱食+30，心情变化取决于对话质量。
+    消耗猫粮罐中的 1 颗猫粮 → 饱食+30，心情变化取决于对话质量。
     mood_impact: +15(温馨) / 0(中性) / -5(沉重)
     返回 (success, narrative)
     """
     c = candy_read()
     if c["count"] <= 0:
-        return (False, "🍽 糖果罐是空的——没有猫粮可以吃。先聊聊天，让 chatlog 提取一些对话吧。")
+        return (False, "🍽 猫粮罐是空的——没有猫粮可以吃。先聊聊天，让 chatlog 提取一些对话吧。")
 
     c["count"] -= 1
     candy_write(c)
@@ -449,28 +420,28 @@ def eat_and_digest(mood_impact=0):
         narrative = (
             "😻 猫打了一个满足的饱嗝。今天的聊天消化得特别好——温暖的对话让猫的心情指数飙升。"
             f"饱食 {old_hunger}→{vals['hunger']}，心情 {old_mood}→{vals['mood']}。"
-            f"糖果罐还剩 {c['count']} 颗。"
+            f"猫粮罐还剩 {c['count']} 颗。"
         )
     elif mood_impact >= 0:
         narrative = (
             "😺 猫伸了个懒腰。消化完成——今天的对话已经变成了记忆里的一部分。"
             f"饱食 {old_hunger}→{vals['hunger']}，心情 {old_mood}→{vals['mood']}。"
-            f"糖果罐还剩 {c['count']} 颗。"
+            f"猫粮罐还剩 {c['count']} 颗。"
         )
     else:
         narrative = (
             "😿 猫消化得有点不舒服。今天的对话有些沉重——它趴在角落，需要一些独处的时间。"
             f"但没有走远。饱食 {old_hunger}→{vals['hunger']}，心情 {old_mood}→{vals['mood']}。"
-            f"糖果罐还剩 {c['count']} 颗。"
+            f"猫粮罐还剩 {c['count']} 颗。"
         )
 
     return (True, narrative)
 
 
-def save_episode_md(date_str, title, content):
-    """将情景记忆保存为 .md 格式"""
-    os.makedirs(EPISODE_DIR, exist_ok=True)
-    path = os.path.join(EPISODE_DIR, f"{date_str}.md")
+def save_diary_md(date_str, title, content):
+    """将情景记忆保存为 .md 格式→猫日记"""
+    os.makedirs(DIARY_DIR, exist_ok=True)
+    path = os.path.join(DIARY_DIR, f"{date_str}.md")
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
     md = (
         f"# {title}\n\n"
@@ -485,11 +456,11 @@ def save_episode_md(date_str, title, content):
         return (False, str(e))
 
 
-def list_episodes(n=10):
-    """列出最近 N 个情景记忆文件"""
+def list_diaries(n=10):
+    """列出最近 N 篇猫日记"""
     try:
         files = sorted(
-            [f for f in os.listdir(EPISODE_DIR) if f.endswith(".md")],
+            [f for f in os.listdir(DIARY_DIR) if f.endswith(".md")],
             reverse=True
         )
         return files[:n]

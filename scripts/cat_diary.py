@@ -10,7 +10,7 @@ from datetime import datetime
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SKILL_DIR = os.path.dirname(SCRIPT_DIR)
-DIARY_DIR = os.path.join(SKILL_DIR, "data", "IO", "diary")
+DIARY_DIR = os.path.join(SKILL_DIR, "MEMORY", "diary")
 
 
 def _today():

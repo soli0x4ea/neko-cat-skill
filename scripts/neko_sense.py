@@ -12,7 +12,7 @@ sys.path.insert(0, SCRIPT_DIR)
 from neko_core import (
     feed, pet, play, treat, vet, check, status,
     log_stdout, load_today_stdout, load_recent_changes,
-    feed_cat_food, eat_and_digest, save_episode_md, list_episodes,
+    feed_cat_food, eat_and_digest, save_diary_md, list_diaries,
     trigger_event
 )
 from narratives import (
@@ -115,6 +115,13 @@ def main():
 
         output = "\n".join(parts)
 
+        # 自动刷新时间河流
+        try:
+            from time_river import refresh_soul
+            refresh_soul(write=True)
+        except:
+            pass
+
     elif cmd == "status":
         result = status()
         output = _build_status_panel(
@@ -125,8 +132,9 @@ def main():
     # ── 记忆管道命令 ──────────────────────────────────
 
     elif cmd == "cat-food":
-        # 放猫粮：自动运行 chatlog 提取 → 存糖果
-        n_treats, total, output = feed_cat_food()  # 不传参 = 自动提取
+        # 放猫粮：LLM 统计对话条数 → 存猫粮
+        n = int(sys.argv[2]) if len(sys.argv) > 2 else 0
+        n_treats, total, output = feed_cat_food(n)
 
     elif cmd == "digest":
         # 消化：LLM 生成情景记忆后调用
@@ -140,7 +148,7 @@ def main():
 
     elif cmd == "episodes":
         # 列出情景记忆
-        eps = list_episodes()
+        eps = list_diaries()
         if eps:
             output = "📖 **情景记忆**\n" + "\n".join(f"- {e}" for e in eps)
         else:

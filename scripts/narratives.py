@@ -283,25 +283,3 @@ def _build_growth_narrative(intimacy_change, intimacy_new, intimacy=0.3):
     return "🐱 猫对你的了解增加了一点点。不多，但积累起来就是了。"
 
 
-# ── 遗留兼容函数─────────────────────────────────────────
-
-def _build_gamble_narrative(delta, is_real, area_profile=None, *args, **kwargs):
-    return _build_feed_narrative(50, 80)
-
-def _build_relieve_narrative(*args, **kwargs):
-    return "🐱 猫伸了个懒腰。"
-
-def _build_candy_eat_narrative(*args, **kwargs):
-    return "🍬 猫吃了一口零食。"
-
-def _build_candy_give_narrative(*args, **kwargs):
-    return "🍬 零食 +1。"
-
-def _build_doodle_narrative(*args, **kwargs):
-    return "📝 猫在便签上按了个爪印。"
-
-def _build_bind_narrative(*args, **kwargs):
-    return "🐱 猫被抱住了。"
-
-def _build_probabilistic_event_narrative(context, variant, data=None, delta=None, area_profile=None):
-    return _build_random_event_narrative("knock_over")
