@@ -13,13 +13,14 @@
 ## 核心工作流
 
 ```
-① 提取：LLM 从当前上下文逐条提取可见对话 → 写入临时 JSON
-       └→ chatlog.py --file /tmp/batch.json    （零配置，不扫描本地文件）
-       └→ 控制台输出「新增 N 条记录」
+① Dump：LLM 原样输出上下文对话 → 写入临时 JSON（不做任何判断）
+       └→ chatlog.py --filter-append /tmp/context_dump.json
+       └→ 只去系统注入噪音，其余全量保存（和 Soli chatlog 一样）
+       └→ 控制台输出「X 条原始 → 保留 Y 条」
     │
     ▼
-② 放猫粮：得到 N → save-cat-food <N>
-       └→ 猫粮库存 +N÷10      （主人把对话倒进猫碗里）
+② 放猫粮：得到 Y → save-cat-food <Y>
+       └→ 猫粮库存 +Y÷10      （主人把对话倒进猫碗里）
     │
     ▼
 ③ 吃饭：LLM 写猫日记(.md) → digest <心情影响>
@@ -27,6 +28,8 @@
        └→ 日记存入 MEMORY/diary/YYYY-MM-DD.md
        （猫吃掉了猫粮，在窗台上打了个盹）
 ```
+
+> **步骤① LLM 的职责：只 dump，不判断。** 将对话中的 user/assistant 消息原样序列化为 JSON 数组，写入临时文件。不需要判断哪些消息值得存——过滤交给 chatlog.py 的纯算法。LLM 不扫描本地的 chatlog.jsonl，零上下文消耗。
 
 ---
 
@@ -56,7 +59,7 @@
 
 | 命令 | 触发词 | 效果 | 执行方式 |
 |:--|:--|:--|:--|
-| **放猫粮** | 放猫粮 | 对话条数 → 猫粮库存 | `save-cat-food <消息数>` |
+| **放猫粮** | 放猫粮 | 对话条数 → 猫粮库存 | `save-cat-food <Y>`（Y 来自步骤①过滤结果） |
 | **吃饭** | neko来吃饭、吃饭、消化 | 消耗猫粮 → 日记 + 数值 | `digest <心情:15/0/-5>` |
 
 ### 😺 日常互动
@@ -122,7 +125,7 @@ Neko_电子猫/
 │   ├── cat_diary.py          # 猫日记写入/读取
 │   ├── time_river.py         # 时间河流
 │   └── soli_memory/
-│       ├── chatlog.py        # 上下文对话提取（零配置）
+│       ├── chatlog.py        # 上下文对话提取 + 纯算法过滤（--filter-append）
 │       └── distil.py         # 关系蒸馏
 ├── data/
 │   ├── values.json           # hp / hunger / mood / intimacy

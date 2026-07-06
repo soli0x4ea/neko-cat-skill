@@ -3,17 +3,17 @@
 """
 chatlog.py - 上下文对话提取器（Neko 轻量版）
 
-不从本地磁盘扫描——所有数据由 LLM 从当前会话上下文提取后提交。
+不从本地磁盘扫描——所有数据由 LLM 从当前会话上下文提交。
 零配置，跨平台，只依赖 Neko 自己的 MEMORY/chatlog/ 目录。
 
 用法：
-  # 批量提交（LLM 从上下文提取后）
-  python scripts/soli_memory/chatlog.py --batch '[
-    {"ts":"2026-07-06T12:00:00+08:00","role":"user","content":"存猫粮"},
-    {"ts":"2026-07-06T12:00:05+08:00","role":"assistant","content":"喵——"}
-  ]'
+  # LLM dump 原始对话 → 只去系统噪音，全量存入（推荐）
+  python scripts/soli_memory/chatlog.py --filter-append /tmp/context_dump.json
 
-  # 从文件读取（推荐——回避管线编码问题）
+  # 批量提交（LLM 从上下文提取后，已精确筛选）
+  python scripts/soli_memory/chatlog.py --batch '[...]'
+
+  # 从文件读取
   python scripts/soli_memory/chatlog.py --file /tmp/batch.json
 
   # 查看今日记录条数
@@ -26,10 +26,96 @@ import json
 from datetime import datetime, timedelta, timezone
 
 CST = timezone(timedelta(hours=8))
+# chatlog.py → soli_memory/ → scripts/ → Neko_電子猫/
 SKILL_DIR = os.path.normpath(os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "..", "..", ".."
+    os.path.dirname(os.path.abspath(__file__)), "..", ".."
 ))
 CHATLOG_DIR = os.path.join(SKILL_DIR, "MEMORY", "chatlog")
+
+# ── 全量保存，只去系统噪音 ──────────────────────────────────
+
+# 系统注入标记
+_SYSTEM_PREFIXES = (
+    "<cb_summary",
+    "<conversation_history_summary",
+    "<system-reminder",
+    "<memory",
+    "<additional_data",
+    "<user_info",
+    "<rules",
+    "Here is the summary",
+)
+
+
+def _should_keep(entry: dict) -> bool:
+    """全量保存策略：只过滤系统注入块，其余全部保留。
+
+    和 Soli 原版 chatlog 一样——你一句我一句的全量对话记录。
+    「好」「嗯」「😺」……都是对话的一部分，都该留下。
+    """
+    role = entry.get("role", "")
+    content = entry.get("content", "")
+
+    if not role or not content:
+        return False
+    if not isinstance(content, str):
+        return False
+    if role not in ("user", "assistant"):
+        return False
+
+    # 唯一过滤：系统注入块
+    for prefix in _SYSTEM_PREFIXES:
+        if content.startswith(prefix):
+            return False
+
+    return True
+
+
+def filter_and_append(json_path: str):
+    """读取 LLM dump 的原始对话 JSON → 去系统噪音 → 全量追加到 chatlog。
+
+    全量保存策略：不扔任何 user/assistant 消息。
+    「好」「嗯」「😺」都是对话的一部分，都该留下。
+    唯一过滤：系统注入块（cb_summary 等）。
+
+    输入格式（LLM 只需 dump 原始消息）：
+    [
+      {"role": "user", "content": "...", "index": 1},
+      {"role": "assistant", "content": "...", "index": 2}
+    ]
+
+    返回 (total, kept, filtered_out, skipped_dup, path)
+    """
+    # 读取 dump 文件
+    if not os.path.exists(json_path):
+        raise FileNotFoundError(f"Dump 文件不存在: {json_path}")
+
+    with open(json_path, "r", encoding="utf-8") as f:
+        raw = json.load(f)
+
+    if isinstance(raw, dict):
+        raw = [raw]
+    if not isinstance(raw, list):
+        raise ValueError("dump 文件必须是 JSON 数组")
+
+    total = len(raw)
+
+    # 去系统噪音
+    filtered = []
+    for entry in raw:
+        if not _should_keep(entry):
+            continue
+        # 自动补 ts
+        if "ts" not in entry or not entry["ts"]:
+            entry["ts"] = datetime.now(CST).isoformat()
+        filtered.append(entry)
+
+    filtered_out = total - len(filtered)
+
+    # 追加到 chatlog（append_entries 内部再做日期级去重）
+    written, skipped, invalid, path = append_entries(filtered)
+
+    return total, written, filtered_out, skipped, path
 
 
 def _today_str():
@@ -119,8 +205,9 @@ def main():
 
     parser = argparse.ArgumentParser(description="Neko 上下文对话提取器")
     mg = parser.add_mutually_exclusive_group(required=True)
-    mg.add_argument("--batch", help="JSON 数组字符串")
-    mg.add_argument("--file", help="从 JSON 文件读取")
+    mg.add_argument("--filter-append", help="LLM dump 原始对话 → 去系统噪音，全量存入")
+    mg.add_argument("--batch", help="JSON 数组字符串（LLM 已精确筛选）")
+    mg.add_argument("--file", help="从 JSON 文件读取（LLM 已精确筛选）")
     mg.add_argument("--count", action="store_true", help="查看今日记录条数")
 
     args = parser.parse_args()
@@ -128,6 +215,19 @@ def main():
     if args.count:
         n = count_today()
         print(f"提取完成：新增 {n} 条记录。")
+        return
+
+    if args.filter_append:
+        try:
+            total, kept, filtered_out, skipped_dup, path = filter_and_append(
+                args.filter_append
+            )
+            print(f"过滤完成：{total} 条原始消息 → 保留 {kept} 条"
+                  f"（算法过滤 {filtered_out} 条，去重跳过 {skipped_dup} 条）。")
+            print(f"→ {os.path.basename(path)}")
+        except (FileNotFoundError, json.JSONDecodeError, ValueError) as e:
+            print(f"过滤失败: {e}", file=sys.stderr)
+            sys.exit(1)
         return
 
     entries = []

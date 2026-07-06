@@ -326,14 +326,30 @@ def _write_time_state(state):
 
 def refresh_soul(style: str = None, write: bool = True):
     """读 timeline.jsonl → 生成时间感知数据 → 写入 time.json
-    
+
     style: None=自动从 state 读取 | "poetic" | "concise"
     write: True=写入 time.json | False=只读不写
+
+    若 timeline.jsonl 不存在或为空，自动初始化一条空白入口，
+    确保后续调用不会因为空文件而崩溃。
     """
     if style is None:
         state = _read_state()
         style = state.get("style", "poetic")
-    
+
+    # 兜底：确保 timeline 存在（至少有一条空入口）
+    if not os.path.exists(TIMELINE_PATH) or os.path.getsize(TIMELINE_PATH) == 0:
+        try:
+            entry = generate_timeline_entry(
+                {"new_msgs": 0, "msg_count": 0, "token_est": 0,
+                 "from_ts": "", "to_ts": "", "emotional_dominant": "",
+                 "highlights": [], "commitments": {}},
+                style=style
+            )
+            append_timeline(entry)
+        except Exception:
+            pass
+
     entries = load_timeline(TIMELINE_KEEP * 2)
     latest = entries[-1] if entries else None
 
@@ -343,7 +359,7 @@ def refresh_soul(style: str = None, write: bool = True):
             month = str(now.month)
             season = _get_month_vibe(now.month)
             time_data = {
-                "moment": _CONCISE_TIME.format(month=month, season=season, HH_MM=now.strftime("%H:%M")),
+                "moment": _CONCISE_TIME.format(month=month, season=season, time=now.strftime("%H:%M")),
                 "river": "0条 · 等待第一条记录",
                 "weather": "济南，天气未获取",
                 "recent_bends": []
