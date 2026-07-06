@@ -26,10 +26,12 @@ import json
 from datetime import datetime, timedelta, timezone
 
 CST = timezone(timedelta(hours=8))
-# chatlog.py → soli_memory/ → scripts/ → Neko_電子猫/
-SKILL_DIR = os.path.normpath(os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "..", ".."
-))
+# 自适应路径：兼容 RedSkill 平铺布局（.py 在根目录）和子目录布局（.py 在 scripts/soli_memory/）
+SKILL_DIR = os.path.dirname(os.path.abspath(__file__))
+if not os.path.exists(os.path.join(SKILL_DIR, "SKILL.md")):
+    SKILL_DIR = os.path.dirname(SKILL_DIR)
+if not os.path.exists(os.path.join(SKILL_DIR, "SKILL.md")):
+    SKILL_DIR = os.path.dirname(SKILL_DIR)
 CHATLOG_DIR = os.path.join(SKILL_DIR, "MEMORY", "chatlog")
 
 # ── 全量保存，只去系统噪音 ──────────────────────────────────

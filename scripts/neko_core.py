@@ -9,7 +9,10 @@ import json, os, random, time as _time
 from datetime import datetime, timedelta
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-SKILL_DIR = os.path.dirname(SCRIPT_DIR)
+# 自适应路径：兼容 RedSkill 平铺布局（.py 在根目录）和子目录布局（.py 在 scripts/）
+SKILL_DIR = SCRIPT_DIR
+if not os.path.exists(os.path.join(SKILL_DIR, "SKILL.md")):
+    SKILL_DIR = os.path.dirname(SKILL_DIR)
 DATA_DIR = os.path.join(SKILL_DIR, "data")
 VALUES_PATH = os.path.join(DATA_DIR, "values.json")
 CANDY_PATH = os.path.join(DATA_DIR, "candy.json")

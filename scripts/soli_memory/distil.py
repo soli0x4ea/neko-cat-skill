@@ -9,8 +9,14 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-# 数据目录
-MEMORY_DATA = Path(__file__).resolve().parent.parent.parent / "MEMORY"
+# 数据目录（自适应：兼容 RedSkill 平铺和子目录布局）
+_SELF_DIR = os.path.dirname(os.path.abspath(__file__))
+_SKILL_ROOT = _SELF_DIR
+if not os.path.exists(os.path.join(_SKILL_ROOT, "SKILL.md")):
+    _SKILL_ROOT = os.path.dirname(_SKILL_ROOT)
+if not os.path.exists(os.path.join(_SKILL_ROOT, "SKILL.md")):
+    _SKILL_ROOT = os.path.dirname(_SKILL_ROOT)
+MEMORY_DATA = Path(_SKILL_ROOT) / "MEMORY"
 FACTS_DIR = MEMORY_DATA / "facts"
 SEMANTIC_DIR = MEMORY_DATA / "semantic"
 EPISODES_DIR = MEMORY_DATA / "diary"

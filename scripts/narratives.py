@@ -157,13 +157,22 @@ def _build_status_panel(hp, hunger, mood, intimacy=0.3, candy=0):
     hp_bar = _bar(hp, 100)
     hunger_bar = _bar(hunger, 100)
     mood_bar = _bar(mood, 100)
-    
+
+    if intimacy >= 0.8:
+        intimacy_label = "黏人精"
+    elif intimacy >= 0.5:
+        intimacy_label = "好朋友"
+    elif intimacy >= 0.3:
+        intimacy_label = "有点熟"
+    else:
+        intimacy_label = "新来的"
+
     return (
         f"🐱 **Neko 状态面板**\n"
         f"🩺 健康值  {hp:>3}/100  {hp_bar}  {_hp_label(hp)}\n"
         f"🍖 饱食度  {hunger:>3}/100  {hunger_bar}  {_hunger_label(hunger)}\n"
         f"😸 心情值  {mood:>3}/100  {mood_bar}  {_mood_label(mood)}\n"
-        f"💕 亲密度  {intimacy:.2f}  ({"黏人精" if intimacy >= 0.8 else "好朋友" if intimacy >= 0.5 else "有点熟" if intimacy >= 0.3 else "新来的"})\n"
+        f"💕 亲密度  {intimacy:.2f}  ({intimacy_label})\n"
         f"🍬 零食库存  {candy} 颗\n"
         f"\n{cat_state(hp, hunger, mood, intimacy)}"
     )

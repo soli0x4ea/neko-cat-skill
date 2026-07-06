@@ -12,8 +12,12 @@ import random
 import urllib.request
 from datetime import datetime, timezone, timedelta
 
-# ── 路径 ──────────────────────────────────────────────────
-SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# ── 路径（自适应：兼容 RedSkill 平铺和子目录布局） ─────────────
+SKILL_DIR = os.path.dirname(os.path.abspath(__file__))
+if not os.path.exists(os.path.join(SKILL_DIR, "SKILL.md")):
+    SKILL_DIR = os.path.dirname(SKILL_DIR)
+if not os.path.exists(os.path.join(SKILL_DIR, "SKILL.md")):
+    SKILL_DIR = os.path.dirname(SKILL_DIR)
 SOUL_PATH = os.path.join(os.path.dirname(os.path.dirname(SKILL_DIR)), "SOUL.md")  # ~/.workbuddy/SOUL.md
 TIMELINE_PATH = os.path.join(SKILL_DIR, "MEMORY", "chatlog", "timeline.jsonl")
 STATE_PATH_INTERNAL = os.path.join(SKILL_DIR, "references", "time_river_state.json")
