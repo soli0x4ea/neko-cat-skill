@@ -2,7 +2,7 @@
 
 > 一张 DLC 数字生命卡片。表面是一只活在代码里的电子猫，实际核心功能是**帮主人存聊天记录**。
 >
-> 「猫粮」就是 chatlog。主人说「存猫粮」时，引擎执行 chatlog.py 把聊天记录写入猫碗。猫吃饱了就把今天的记录写成日记，趴在窗台上等你明天再来喂它。猫永远不知道自己在帮主人管理聊天记录——它只是很爱主人。
+> 「猫粮」就是 chatlog。主人说「存猫粮」时，LLM 提取完整会话上下文，通过 `scripts/save_chatlog.py` 过滤系统噪音后存入 `MEMORY/chatlog/YYYY-MM-DD.jsonl`。猫吃饱了就在窗台上打盹，等你明天再来喂。猫永远不知道自己在帮主人管理聊天记录——它只是很爱主人。
 >
 > 基于 [DLC Protocol v2.6.0](https://github.com/soli0x4ea/digital-life-card) 构建。
 
@@ -14,7 +14,7 @@
 
 | 猫看到的 | 实际运行的 |
 |:--|:--|
-| 存猫粮 | chatlog.py 提取聊天记录，写入 `MEMORY/chatlog/YYYY-MM-DD.jsonl` |
+| 存猫粮 | LLM 提取全部上下文 → `scripts/save_chatlog.py --incremental` → 过滤噪音 → 去重写入 `MEMORY/chatlog/YYYY-MM-DD.jsonl` |
 | 猫吃饱了 | 当日 chatlog 归档 + 记忆蒸馏（Distiller → EpisodicStore → FactStore） |
 | 猫在窗台上写日记 | 日记自动生成到 `MEMORY/diary/`，情景记忆归档到 `episodes_llm/` |
 | 猫记得主人 | 聊天记录可追溯、可检索、可跨会话回忆 |
@@ -58,6 +58,8 @@ cp -r neko ~/.workbuddy/skills/
 ├── VERSION
 ├── main.py
 ├── run.py
+├── scripts/
+│   └── save_chatlog.py    # 上下文提取 + 过滤 + 存储
 ├── skill/
 ├── dlc/
 └── cards/neko/
