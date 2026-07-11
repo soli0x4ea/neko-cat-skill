@@ -1,9 +1,0 @@
-{
-  "hp": 80,
-  "hunger": 50,
-  "mood": 60,
-  "intimacy": 0.3,
-  "bound": false,
-  "pleasure_locked": false,
-  "last_check": ""
-}

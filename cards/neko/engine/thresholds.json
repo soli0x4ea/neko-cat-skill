@@ -1,0 +1,54 @@
+{
+  "thresholds": {
+    "thr_starving": {
+      "threshold_id": "thr_starving",
+      "entity": "neko",
+      "channel": "hunger",
+      "operator": "<=",
+      "value": 0,
+      "cooldown_ticks": 5,
+      "event_id": "ev_starving",
+      "event_type": "critical"
+    },
+    "thr_sick": {
+      "threshold_id": "thr_sick",
+      "entity": "neko",
+      "channel": "hp",
+      "operator": "<=",
+      "value": 20,
+      "cooldown_ticks": 10,
+      "event_id": "ev_sick",
+      "event_type": "warning"
+    },
+    "thr_cat_heaven": {
+      "threshold_id": "thr_cat_heaven",
+      "entity": "neko",
+      "channel": "hp",
+      "operator": "<=",
+      "value": 0,
+      "cooldown_ticks": 1,
+      "event_id": "ev_cat_heaven",
+      "event_type": "critical"
+    },
+    "thr_kneading": {
+      "threshold_id": "thr_kneading",
+      "entity": "neko",
+      "channel": "mood",
+      "operator": ">=",
+      "value": 100,
+      "cooldown_ticks": 5,
+      "event_id": "ev_kneading",
+      "event_type": "info"
+    },
+    "thr_bristle": {
+      "threshold_id": "thr_bristle",
+      "entity": "neko",
+      "channel": "mood",
+      "operator": "<=",
+      "value": 10,
+      "cooldown_ticks": 8,
+      "event_id": "ev_bristle",
+      "event_type": "warning"
+    }
+  }
+}

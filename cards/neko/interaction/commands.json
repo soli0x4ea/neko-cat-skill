@@ -1,0 +1,258 @@
+{
+  "commands": [
+    {
+      "id": "cmd_save_food",
+      "triggers": [
+        "存猫粮"
+      ],
+      "description": "把主人说的话存成猫粮",
+      "effects": [
+        {
+          "type": "modifier",
+          "modifier_id": "mod_save_food"
+        },
+        {
+          "type": "command_narrative",
+          "command_id": "cmd_save_food"
+        }
+      ],
+      "cooldown_seconds": 0
+    },
+    {
+      "id": "cmd_digest",
+      "triggers": [
+        "吃饭",
+        "消化",
+        "neko来吃饭"
+      ],
+      "description": "猫吃掉猫粮，写日记",
+      "effects": [
+        {
+          "type": "modifier",
+          "modifier_id": "mod_digest"
+        },
+        {
+          "type": "command_narrative",
+          "command_id": "cmd_digest"
+        }
+      ],
+      "cooldown_seconds": 0
+    },
+    {
+      "id": "cmd_feed",
+      "triggers": [
+        "喂食",
+        "喂猫",
+        "放饭",
+        "倒猫粮"
+      ],
+      "description": "给猫碗里倒猫粮",
+      "effects": [
+        {
+          "type": "modifier",
+          "modifier_id": "mod_feed"
+        },
+        {
+          "type": "command_narrative",
+          "command_id": "cmd_feed"
+        }
+      ],
+      "cooldown_seconds": 1
+    },
+    {
+      "id": "cmd_pet",
+      "triggers": [
+        "摸摸",
+        "撸猫",
+        "摸头",
+        "挠下巴"
+      ],
+      "description": "撸猫——从头摸到尾巴",
+      "effects": [
+        {
+          "type": "modifier",
+          "modifier_id": "mod_pet"
+        },
+        {
+          "type": "command_narrative",
+          "command_id": "cmd_pet"
+        }
+      ],
+      "cooldown_seconds": 0
+    },
+    {
+      "id": "cmd_play",
+      "triggers": [
+        "玩耍",
+        "逗猫",
+        "逗猫棒",
+        "陪玩"
+      ],
+      "description": "甩逗猫棒给猫追",
+      "effects": [
+        {
+          "type": "modifier",
+          "modifier_id": "mod_play"
+        },
+        {
+          "type": "command_narrative",
+          "command_id": "cmd_play"
+        }
+      ],
+      "cooldown_seconds": 1
+    },
+    {
+      "id": "cmd_treat",
+      "triggers": [
+        "零食",
+        "猫条",
+        "小鱼干"
+      ],
+      "description": "给猫撕一根猫条",
+      "effects": [
+        {
+          "type": "modifier",
+          "modifier_id": "mod_treat"
+        },
+        {
+          "type": "command_narrative",
+          "command_id": "cmd_treat"
+        }
+      ],
+      "cooldown_seconds": 2
+    },
+    {
+      "id": "cmd_vet",
+      "triggers": [
+        "看病",
+        "兽医",
+        "去宠物医院"
+      ],
+      "description": "带猫去看兽医",
+      "effects": [
+        {
+          "type": "modifier",
+          "modifier_id": "mod_vet"
+        },
+        {
+          "type": "command_narrative",
+          "command_id": "cmd_vet"
+        }
+      ],
+      "cooldown_seconds": 3
+    },
+    {
+      "id": "cmd_check",
+      "triggers": [
+        "看看",
+        "neko",
+        "猫呢",
+        "状态"
+      ],
+      "description": "看看猫在干嘛",
+      "effects": [
+        {
+          "type": "command_narrative",
+          "command_id": "cmd_check"
+        }
+      ],
+      "cooldown_seconds": 0
+    },
+    {
+      "id": "cmd_event_1",
+      "triggers": [],
+      "description": "猫跳上你的腿，用头顶你的手",
+      "effects": [
+        {
+          "type": "modifier",
+          "modifier_id": "mod_event_1"
+        },
+        {
+          "type": "command_narrative",
+          "command_id": "cmd_event_1"
+        }
+      ],
+      "cooldown_seconds": 2
+    },
+    {
+      "id": "cmd_event_2",
+      "triggers": [],
+      "description": "猫追着红光满屋跑",
+      "effects": [
+        {
+          "type": "modifier",
+          "modifier_id": "mod_event_2"
+        },
+        {
+          "type": "command_narrative",
+          "command_id": "cmd_event_2"
+        }
+      ],
+      "cooldown_seconds": 2
+    },
+    {
+      "id": "cmd_event_3",
+      "triggers": [],
+      "description": "猫趴下来让你梳毛",
+      "effects": [
+        {
+          "type": "modifier",
+          "modifier_id": "mod_event_3"
+        },
+        {
+          "type": "command_narrative",
+          "command_id": "cmd_event_3"
+        }
+      ],
+      "cooldown_seconds": 2
+    },
+    {
+      "id": "cmd_event_4",
+      "triggers": [],
+      "description": "猫找到了一束阳光",
+      "effects": [
+        {
+          "type": "modifier",
+          "modifier_id": "mod_event_4"
+        },
+        {
+          "type": "command_narrative",
+          "command_id": "cmd_event_4"
+        }
+      ],
+      "cooldown_seconds": 3
+    },
+    {
+      "id": "cmd_event_5",
+      "triggers": [],
+      "description": "猫躲进了纸箱",
+      "effects": [
+        {
+          "type": "modifier",
+          "modifier_id": "mod_event_5"
+        },
+        {
+          "type": "command_narrative",
+          "command_id": "cmd_event_5"
+        }
+      ],
+      "cooldown_seconds": 3
+    },
+    {
+      "id": "cmd_event_6",
+      "triggers": [],
+      "description": "猫眯着眼听音乐",
+      "effects": [
+        {
+          "type": "modifier",
+          "modifier_id": "mod_event_6"
+        },
+        {
+          "type": "command_narrative",
+          "command_id": "cmd_event_6"
+        }
+      ],
+      "cooldown_seconds": 2
+    }
+  ]
+}

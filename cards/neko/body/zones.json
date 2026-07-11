@@ -1,0 +1,16 @@
+{
+  "zones": {
+    "head": {
+      "name": "头部"
+    },
+    "back": {
+      "name": "背部"
+    },
+    "belly": {
+      "name": "肚子"
+    },
+    "tail": {
+      "name": "尾巴"
+    }
+  }
+}

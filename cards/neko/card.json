@@ -1,0 +1,40 @@
+{
+  "card_id": "neko",
+  "card_name": "Neko 电子猫",
+  "protocol_version": "2.6.0",
+  "version": "1.0.6",
+  "complexity_level": "L2",
+  "author": "cardforge",
+  "created_at": "2026-07-11T00:00:00Z",
+  "updated_at": "2026-07-11T00:00:00Z",
+  "description": "一只活在代码里的猫。吃猫粮、晒太阳、偶尔踩奶。世界很小——主人、猫粮、摸摸、窗台，这样就够了。",
+  "type": "companion",
+  "modules": {
+    "identity": {
+      "enabled": true
+    },
+    "engine": {
+      "enabled": true,
+      "entities": "engine/entities.json",
+      "modifiers": "engine/modifiers.json",
+      "thresholds": "engine/thresholds.json",
+      "narratives": "engine/narratives.json"
+    },
+    "interaction": {
+      "enabled": true,
+      "sub_keys": [
+        "commands",
+        "items"
+      ]
+    },
+    "memory": {
+      "enabled": true
+    },
+    "body": {
+      "enabled": true
+    },
+    "behavior": {
+      "enabled": true
+    }
+  }
+}

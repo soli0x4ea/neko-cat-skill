@@ -1,0 +1,42 @@
+{
+  "entities": {
+    "neko": {
+      "channels": {
+        "hp": {
+          "initial": 80,
+          "min": 0,
+          "max": 100,
+          "description": "太久没理猫会生病，0=回喵星"
+        },
+        "hunger": {
+          "initial": 50,
+          "min": 0,
+          "max": 100,
+          "description": "饱食度——越低越饿，0=饿坏了会推东西"
+        },
+        "mood": {
+          "initial": 70,
+          "min": 0,
+          "max": 100,
+          "description": "100=踩奶，<10=炸毛"
+        },
+        "intimacy": {
+          "initial": 30,
+          "min": 0,
+          "max": 100,
+          "description": "慢慢建立，不衰减"
+        },
+        "cat_food": {
+          "initial": 0,
+          "min": 0,
+          "max": 100,
+          "description": "主人说话越多攒越多"
+        }
+      },
+      "flags": {
+        "is_purring": false,
+        "is_hiding": false
+      }
+    }
+  }
+}

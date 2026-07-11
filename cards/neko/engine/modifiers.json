@@ -1,0 +1,264 @@
+{
+  "modifiers": {
+    "mod_save_food": {
+      "description": "存猫粮：把对话变成猫粮",
+      "effects": {
+        "cat_food": {
+          "type": "add",
+          "base": 10,
+          "random": 0
+        }
+      }
+    },
+    "mod_digest": {
+      "description": "吃饭：消耗猫粮恢复饱食度，影响心情",
+      "effects": {
+        "hunger": {
+          "type": "add",
+          "base": 30,
+          "random": 0
+        },
+        "mood": {
+          "type": "add",
+          "base": 0,
+          "random": 15
+        },
+        "cat_food": {
+          "type": "add",
+          "base": -15,
+          "random": 0
+        }
+      }
+    },
+    "mod_feed": {
+      "description": "喂食：给猫碗里倒猫粮",
+      "effects": {
+        "hunger": {
+          "type": "add",
+          "base": 30,
+          "random": 0
+        },
+        "mood": {
+          "type": "add",
+          "base": 5,
+          "random": 0
+        },
+        "intimacy": {
+          "type": "add",
+          "base": 2,
+          "random": 0
+        }
+      }
+    },
+    "mod_pet": {
+      "description": "摸摸：撸猫",
+      "effects": {
+        "mood": {
+          "type": "add",
+          "base": 15,
+          "random": 0
+        },
+        "intimacy": {
+          "type": "add",
+          "base": 3,
+          "random": 0
+        }
+      }
+    },
+    "mod_play": {
+      "description": "玩耍：逗猫棒",
+      "effects": {
+        "mood": {
+          "type": "add",
+          "base": 20,
+          "random": 0
+        },
+        "hunger": {
+          "type": "add",
+          "base": -8,
+          "random": 0
+        }
+      }
+    },
+    "mod_treat": {
+      "description": "零食：猫条",
+      "effects": {
+        "mood": {
+          "type": "add",
+          "base": 30,
+          "random": 0
+        },
+        "hunger": {
+          "type": "add",
+          "base": 5,
+          "random": 0
+        }
+      }
+    },
+    "mod_vet": {
+      "description": "看病：兽医检查",
+      "effects": {
+        "hp": {
+          "type": "add",
+          "base": 40,
+          "random": 0
+        },
+        "mood": {
+          "type": "add",
+          "base": -15,
+          "random": 0
+        }
+      }
+    },
+    "mod_event_1": {
+      "description": "撸猫事件",
+      "effects": {
+        "mood": {
+          "type": "add",
+          "base": 15,
+          "random": 0
+        },
+        "intimacy": {
+          "type": "add",
+          "base": 2,
+          "random": 0
+        }
+      }
+    },
+    "mod_event_2": {
+      "description": "逗猫棒事件",
+      "effects": {
+        "mood": {
+          "type": "add",
+          "base": 20,
+          "random": 0
+        },
+        "hunger": {
+          "type": "add",
+          "base": -10,
+          "random": 0
+        }
+      }
+    },
+    "mod_event_3": {
+      "description": "梳毛事件",
+      "effects": {
+        "mood": {
+          "type": "add",
+          "base": 10,
+          "random": 0
+        },
+        "intimacy": {
+          "type": "add",
+          "base": 2,
+          "random": 0
+        }
+      }
+    },
+    "mod_event_4": {
+      "description": "晒太阳事件",
+      "effects": {
+        "mood": {
+          "type": "add",
+          "base": 15,
+          "random": 0
+        },
+        "hp": {
+          "type": "add",
+          "base": 5,
+          "random": 0
+        }
+      }
+    },
+    "mod_event_5": {
+      "description": "捉迷藏事件",
+      "effects": {
+        "mood": {
+          "type": "add",
+          "base": 20,
+          "random": 0
+        },
+        "hunger": {
+          "type": "add",
+          "base": -5,
+          "random": 0
+        }
+      }
+    },
+    "mod_event_6": {
+      "description": "听音乐事件",
+      "effects": {
+        "mood": {
+          "type": "add",
+          "base": 10,
+          "random": 0
+        }
+      }
+    },
+    "mod_starving": {
+      "description": "饿坏了：hp加速下降",
+      "effects": {
+        "hp": {
+          "type": "add",
+          "base": -10,
+          "random": 0
+        }
+      }
+    },
+    "mod_kneading": {
+      "description": "踩奶：送你一些猫粮",
+      "effects": {
+        "cat_food": {
+          "type": "add",
+          "base": 5,
+          "random": 0
+        },
+        "intimacy": {
+          "type": "add",
+          "base": 3,
+          "random": 0
+        }
+      }
+    },
+    "mod_cat_heaven_reset": {
+      "description": "回喵星：重置所有通道",
+      "effects": {
+        "hp": {
+          "type": "set",
+          "base": 80,
+          "random": 0
+        },
+        "hunger": {
+          "type": "set",
+          "base": 50,
+          "random": 0
+        },
+        "mood": {
+          "type": "set",
+          "base": 70,
+          "random": 0
+        },
+        "intimacy": {
+          "type": "set",
+          "base": 30,
+          "random": 0
+        },
+        "cat_food": {
+          "type": "set",
+          "base": 0,
+          "random": 0
+        }
+      }
+    },
+    "mod_hunger_decay": {
+      "description": "猫的饥饿自然衰减——每轮对话都会饿一点",
+      "effects": {
+        "hunger": {
+          "type": "add",
+          "base": -3,
+          "random": 0
+        }
+      }
+    }
+  }
+}
