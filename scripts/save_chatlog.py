@@ -23,6 +23,7 @@ import sys
 import os
 import json
 import hashlib
+import time
 from datetime import datetime, timezone, timedelta
 
 # 确保能 import dlc 包
@@ -30,7 +31,14 @@ SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if SKILL_DIR not in sys.path:
     sys.path.insert(0, SKILL_DIR)
 
-from dlc.memory.chatlog import ChatlogStore
+import importlib.util as _iu
+_chatlog_spec = _iu.spec_from_file_location(
+    "dlc_memory_chatlog",
+    os.path.join(SKILL_DIR, "dlc", "memory", "chatlog.py")
+)
+_chatlog_module = _iu.module_from_spec(_chatlog_spec)
+_chatlog_spec.loader.exec_module(_chatlog_module)
+ChatlogStore = _chatlog_module.ChatlogStore
 
 CST = timezone(timedelta(hours=8))
 CHATLOG_DIR = os.path.join(SKILL_DIR, "MEMORY", "chatlog")
@@ -218,7 +226,6 @@ def main():
     args = parser.parse_args()
 
     if args.count:
-        from dlc.memory.chatlog import ChatlogStore
         store = ChatlogStore(CHATLOG_DIR)
         today = datetime.now(CST).strftime("%Y-%m-%d")
         n = store.count_day(today)
