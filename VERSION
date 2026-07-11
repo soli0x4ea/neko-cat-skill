@@ -1,7 +1,1 @@
-DLC Neko 电子猫 v1.0.7
-
-改动：
-- 新增 scripts/save_chatlog.py：LLM 上下文 dump → 过滤系统噪音 → ChatlogStore 持久化
-- 支持 --incremental（增量书签）和 --dump（全量）两种模式
-- SKILL.md 新增「存猫粮强制执行流程」章节，明确 LLM 三步顺序
-- 修复：存猫粮不再只是叙事触发，真正写入 MEMORY/chatlog/
+1.0.7
